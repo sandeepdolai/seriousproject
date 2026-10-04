@@ -40,7 +40,7 @@ import { EditorCanvas } from "./editor-canvas"
 import type { CanvasError } from "./editor-canvas"
 import { PromptBar } from "./prompt-bar"
 
-const AUTO_TOOLS = ["removeBackground", "upscale"]
+const AUTO_TOOLS = ["removeBackground", "upscale", "colorize", "restore"]
 const SAMPLES = [
   "/images/sample-portrait.png",
   "/images/sample-product.png",
@@ -57,6 +57,13 @@ const PANEL_BY_TOOL: Record<string, PanelId> = {
   uncrop: "expand",
   upscale: "upscale",
   enhance: "enhance",
+  blur: "blur",
+  colorize: "colorize",
+  restore: "restore",
+  recolor: "recolor",
+  resize: "resize",
+  virtualTryOn: "tryon",
+  profilePicture: "profile",
 }
 
 interface UploadStash {
@@ -250,41 +257,58 @@ export function EditorPage({ query }: { query: URLSearchParams }) {
   }
 
   async function runAuto(image: string, autoTool: string, scale: number) {
-    const isUpscale = autoTool === "upscale"
-    const label = isUpscale ? `Upscaling ${scale}x…` : "Removing background…"
+    const label =
+      autoTool === "upscale"
+        ? `Upscaling ${scale}x…`
+        : autoTool === "colorize"
+          ? "Colorizing photo…"
+          : autoTool === "restore"
+            ? "Restoring photo…"
+            : "Removing background…"
     setProcessing(label)
     setError(null)
     try {
-      await runTool(
-        isUpscale ? "upscale" : "remove-background",
-        isUpscale ? { image, scale } : { image },
-        {
-          label,
-          onSuccess: async (result) => {
-            if (!isUpscale) {
-              // The API returns the subject on a flat white backdrop — key
-              // it to a real transparent cutout for swatches & PNG export.
-              try {
-                const loaded = await loadImage(result.imageUrl)
-                const keyed = makeWhiteTransparent(loaded)
-                transparentBaseRef.current = keyed
-                setTransparentBase(keyed)
-                commitResult(keyed, result.width, result.height)
-              } catch {
-                transparentBaseRef.current = result.imageUrl
-                setTransparentBase(result.imageUrl)
-                commitResult(result.imageUrl, result.width, result.height)
-              }
-            } else {
+      const endpoint =
+        autoTool === "upscale"
+          ? "upscale"
+          : autoTool === "colorize"
+            ? "colorize"
+            : autoTool === "restore"
+              ? "restore"
+              : "remove-background"
+      const body =
+        autoTool === "upscale"
+          ? { image, scale }
+          : autoTool === "restore"
+            ? { image, colorize: true }
+            : { image }
+      await runTool(endpoint, body, {
+        label,
+        onSuccess: async (result) => {
+          if (autoTool === "removeBackground") {
+            // The API returns the subject on a flat white backdrop — key
+            // it to a real transparent cutout for swatches & PNG export.
+            try {
+              const loaded = await loadImage(result.imageUrl)
+              const keyed = makeWhiteTransparent(loaded)
+              transparentBaseRef.current = keyed
+              setTransparentBase(keyed)
+              commitResult(keyed, result.width, result.height)
+            } catch {
+              transparentBaseRef.current = result.imageUrl
+              setTransparentBase(result.imageUrl)
               commitResult(result.imageUrl, result.width, result.height)
             }
-            setRating(null)
-          },
-          retry: () => {
-            void runAuto(image, autoTool, scale)
-          },
+          } else {
+            commitResult(result.imageUrl, result.width, result.height)
+          }
+          setRating(null)
         },
-        helpers
+        retry: () => {
+          void runAuto(image, autoTool, scale)
+        },
+      },
+      helpers
       )
     } finally {
       setProcessing(null)
@@ -562,6 +586,12 @@ export function EditorPage({ query }: { query: URLSearchParams }) {
     onShadowToggle: (on) => void handleShadowToggle(on),
     blurValue,
     onBlurCommit: handleBlurCommit,
+    onBlurApply: (value) =>
+      void execute(
+        "blur",
+        { image: currentRef.current, intensity: value },
+        `Blurring background (${value}/10)…`
+      ),
     onCompareToggle: () => setCompare((c) => !c),
     onRetouch: (target) =>
       void execute(
@@ -602,6 +632,42 @@ export function EditorPage({ query }: { query: URLSearchParams }) {
         "enhance",
         { image: currentRef.current },
         "Enhancing…"
+      ),
+    onColorize: () =>
+      void execute(
+        "colorize",
+        { image: currentRef.current },
+        "Colorizing photo…"
+      ),
+    onRestore: (colorize) =>
+      void execute(
+        "restore",
+        { image: currentRef.current, colorize },
+        "Restoring photo…"
+      ),
+    onRecolor: (target, color) =>
+      void execute(
+        "recolor",
+        { image: currentRef.current, target, color },
+        `Recoloring ${target}…`
+      ),
+    onResize: (request) =>
+      void execute(
+        "resize",
+        { image: currentRef.current, ...request },
+        "Resizing image…"
+      ),
+    onTryOn: (garment, model) =>
+      void execute(
+        "virtual-try-on",
+        { image: currentRef.current, garment, model },
+        "Dressing the model…"
+      ),
+    onProfilePicture: (style) =>
+      void execute(
+        "profile-picture",
+        { image: currentRef.current, style },
+        "Polishing your profile picture…"
       ),
   }
 

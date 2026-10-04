@@ -318,7 +318,11 @@ export function UploadZone({ config }: { config: ToolConfig }) {
           {(busy || videoProgress !== null) && (
             <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
           )}
-          {isVideoTool ? "Upload video" : "Upload image"}
+          {isVideoTool
+            ? "Upload video"
+            : config.ctaLabel
+              ? config.ctaLabel
+              : "Upload image"}
         </button>
 
         <p className="text-gray-500 text-sm mt-3">

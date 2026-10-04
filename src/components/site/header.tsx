@@ -31,19 +31,29 @@ interface NavItem {
 
 const EDIT_ITEMS: NavItem[] = [
   { label: "Background Remover", path: ROUTES.backgroundRemover },
+  { label: "Blur Background", path: ROUTES.blurBackground },
   { label: "Image Upscaler", path: ROUTES.imageUpscaler },
+  { label: "Photo Enhancer", path: ROUTES.photoEnhancer },
   { label: "Magic Eraser", path: ROUTES.magicEraser },
   { label: "Uncrop", path: ROUTES.uncrop },
   { label: "Generative Fill", path: ROUTES.generativeFill },
-  { label: "Video Background Remover", path: ROUTES.videoBackgroundRemover },
-  { label: "All tools", path: ROUTES.backgroundRemover },
+  { label: "Colorize Photo", path: ROUTES.colorizePhoto },
+  { label: "Photo Restoration", path: ROUTES.photoRestoration },
+  { label: "Recolor", path: ROUTES.recolor },
+  { label: "Image Resizer", path: ROUTES.resizeImage },
+  { label: "Profile Picture Maker", path: ROUTES.profilePictureMaker },
+  { label: "All tools", path: ROUTES.tools },
 ]
 
 const GENERATE_ITEMS: NavItem[] = [
   { label: "AI Images", path: ROUTES.aiImageGenerator },
-  { label: "AI Videos", path: ROUTES.videoBackgroundRemover },
+  { label: "AI Art", path: ROUTES.aiArtGenerator },
+  { label: "AI Logos", path: ROUTES.aiLogos },
+  { label: "AI Backgrounds", path: ROUTES.aiBackgroundGenerator },
   { label: "AI Ads", path: ROUTES.aiAds },
   { label: "AI Product Photography", path: ROUTES.aiProductPhotography },
+  { label: "Virtual Try-On", path: ROUTES.virtualTryOn },
+  { label: "AI Videos", path: ROUTES.videoBackgroundRemover },
 ]
 
 const API_ITEMS: NavItem[] = [

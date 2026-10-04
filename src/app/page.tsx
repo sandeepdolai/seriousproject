@@ -8,6 +8,7 @@ import { Header } from "@/components/site/header"
 import { Footer } from "@/components/site/footer"
 import { LandingPage } from "@/components/site/landing-page"
 import { PricingPage } from "@/components/site/pricing-page"
+import { ToolsIndexPage } from "@/components/tools/tools-index-page"
 import { ToolPage } from "@/components/tools/tool-page"
 import { ToolPageConfig } from "@/components/tools/tool-configs"
 import { EditorPage } from "@/components/editor/editor-page"
@@ -31,27 +32,23 @@ export default function Home() {
     case ROUTES.pricing:
       content = <PricingPage />
       break
-    case ROUTES.backgroundRemover:
-    case ROUTES.imageUpscaler:
-    case ROUTES.magicEraser:
-    case ROUTES.uncrop:
-    case ROUTES.generativeFill:
-    case ROUTES.aiImageGenerator:
-    case ROUTES.aiProductPhotography:
-    case ROUTES.videoBackgroundRemover:
-    case ROUTES.aiAds: {
-      const config = ToolPageConfig[route.path]
-      content = config ? <ToolPage config={config} route={route} /> : <LandingPage />
+    case ROUTES.tools:
+      content = <ToolsIndexPage />
       break
-    }
     case ROUTES.editor:
       content = <EditorPage query={route.query} />
       break
     case ROUTES.generate:
       content = <GeneratePage />
       break
-    default:
-      content = <LandingPage />
+    default: {
+      const config = ToolPageConfig[route.path]
+      content = config ? (
+        <ToolPage config={config} route={route} />
+      ) : (
+        <LandingPage />
+      )
+    }
   }
 
   return (

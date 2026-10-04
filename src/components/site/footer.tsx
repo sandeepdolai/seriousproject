@@ -12,18 +12,22 @@ import { useRouter, ROUTES } from "@/lib/router"
 import { useToast } from "@/hooks/use-toast"
 
 const TOOLS_LINKS: { label: string; path: string }[] = [
-  { label: "Image Upscaler", path: ROUTES.imageUpscaler },
   { label: "Background Remover", path: ROUTES.backgroundRemover },
-  { label: "Video Background Remover", path: ROUTES.videoBackgroundRemover },
-  { label: "Change Background", path: ROUTES.backgroundRemover },
+  { label: "Blur Background", path: ROUTES.blurBackground },
+  { label: "Image Upscaler", path: ROUTES.imageUpscaler },
+  { label: "Photo Enhancer", path: ROUTES.photoEnhancer },
   { label: "Magic Eraser", path: ROUTES.magicEraser },
+  { label: "Colorize Photo", path: ROUTES.colorizePhoto },
+  { label: "Photo Restoration", path: ROUTES.photoRestoration },
+  { label: "Recolor", path: ROUTES.recolor },
+  { label: "Image Resizer", path: ROUTES.resizeImage },
+  { label: "Profile Picture Maker", path: ROUTES.profilePictureMaker },
   { label: "AI Image Generator", path: ROUTES.aiImageGenerator },
-  { label: "AI Video Generator", path: ROUTES.videoBackgroundRemover },
-  { label: "Generative Fill", path: ROUTES.generativeFill },
-  { label: "Uncrop", path: ROUTES.uncrop },
-  { label: "AI Ads", path: ROUTES.aiAds },
-  { label: "AI Product Photography", path: ROUTES.aiProductPhotography },
-  { label: "Bulk Image Editor", path: ROUTES.magicEraser },
+  { label: "AI Art Generator", path: ROUTES.aiArtGenerator },
+  { label: "AI Logo Generator", path: ROUTES.aiLogos },
+  { label: "AI Background Generator", path: ROUTES.aiBackgroundGenerator },
+  { label: "Virtual Try-On", path: ROUTES.virtualTryOn },
+  { label: "All tools", path: ROUTES.tools },
 ]
 
 const PRODUCTS_LINKS = [

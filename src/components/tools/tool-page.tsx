@@ -60,7 +60,7 @@ export function ToolPage({
         <nav aria-label="Breadcrumb" className="text-sm text-gray-400 mb-4">
           <button
             type="button"
-            onClick={() => navigate("/background-remover")}
+            onClick={() => navigate("/tools")}
             className="hover:text-gray-600 transition"
           >
             Tools
@@ -115,6 +115,12 @@ export function ToolPage({
               value={prompt}
               onChange={setPrompt}
               onGenerate={() => navigate("/generate", prompt ? { prompt } : undefined)}
+              styleChips={config.styleChips}
+              placeholder={
+                config.slug === "/ai-logos"
+                  ? "Describe your business and what it stands for… e.g. a cozy neighborhood coffee roastery"
+                  : "Describe the image you want to create… be detailed for best results"
+              }
             />
           ) : (
             <UploadZone config={config} />
@@ -205,6 +211,9 @@ export function ToolPage({
           </div>
         </section>
       )}
+
+      {/* ---------- Embedded pricing (generator pages) ---------- */}
+      {config.showPricing && <EmbeddedPricing />}
 
       {/* ---------- How to ---------- */}
       <section className="mt-16 md:mt-24" aria-labelledby="howto-h2">
@@ -361,25 +370,161 @@ export function ToolPage({
   )
 }
 
+function EmbeddedPricing() {
+  const { navigate } = useRouter()
+  const [yearly, setYearly] = useState(true)
+  const plans = [
+    {
+      name: "Free",
+      monthly: 0,
+      yearly: 0,
+      cta: "Continue",
+      features: ["Starter credits included", "Preview downloads", "Core editing tools"],
+      highlight: false,
+    },
+    {
+      name: "Pro",
+      monthly: 10,
+      yearly: 8,
+      cta: "Upgrade",
+      features: ["Unlimited generations", "300-day storage", "Every AI model"],
+      highlight: true,
+    },
+    {
+      name: "Business",
+      monthly: 30,
+      yearly: 24,
+      cta: "Upgrade",
+      features: ["6× monthly credits", "Team workspace", "Priority processing"],
+      highlight: false,
+    },
+  ]
+  return (
+    <section className="mt-16 md:mt-24" aria-labelledby="embedded-pricing-h2">
+      <h2 id="embedded-pricing-h2" className="text-2xl md:text-3xl font-bold tracking-tight text-center">
+        Simple, transparent pricing
+      </h2>
+      <div className="mt-6 flex justify-center">
+        <div className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 p-1" role="group" aria-label="Billing period">
+          <button
+            type="button"
+            onClick={() => setYearly(false)}
+            aria-pressed={!yearly}
+            className={cn(
+              "px-4 py-1.5 text-sm rounded-full transition",
+              !yearly ? "bg-black text-white" : "text-gray-600 hover:text-black"
+            )}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => setYearly(true)}
+            aria-pressed={yearly}
+            className={cn(
+              "px-4 py-1.5 text-sm rounded-full transition",
+              yearly ? "bg-black text-white" : "text-gray-600 hover:text-black"
+            )}
+          >
+            Yearly
+          </button>
+        </div>
+      </div>
+      {yearly && (
+        <p className="text-center text-sm text-blue-600 mt-3">
+          Save 20% with a yearly plan
+        </p>
+      )}
+      <div className="mt-8 grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        {plans.map((plan) => (
+          <div
+            key={plan.name}
+            className={cn(
+              "relative rounded-2xl border p-6 bg-white",
+              plan.highlight ? "border-blue-500 border-2" : "border-gray-200"
+            )}
+          >
+            {plan.highlight && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 text-white text-xs font-medium px-3 py-1">
+                Most Popular
+              </span>
+            )}
+            <h3 className="font-semibold text-neutral-900">{plan.name}</h3>
+            <div className="mt-3 flex items-end gap-1">
+              <span className="text-4xl font-bold text-neutral-900">
+                ${yearly ? plan.yearly : plan.monthly}
+              </span>
+              <span className="text-sm text-gray-500 mb-1">/month</span>
+            </div>
+            <ul className="mt-4 space-y-2">
+              {plan.features.map((feature) => (
+                <li key={feature} className="flex items-start gap-2 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" aria-hidden="true" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => navigate("/pricing")}
+              className={cn(
+                "mt-6 w-full h-10 rounded-full text-sm font-medium transition",
+                plan.highlight
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-black text-white hover:bg-neutral-800"
+              )}
+            >
+              {plan.cta}
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function GeneratorPrompt({
   value,
   onChange,
   onGenerate,
+  styleChips,
+  placeholder,
 }: {
   value: string
   onChange: (value: string) => void
   onGenerate: () => void
+  styleChips?: string[]
+  placeholder?: string
 }) {
+  function applyChip(chip: string) {
+    const text = value.trim()
+    if (text.toLowerCase().includes(chip.toLowerCase())) return
+    onChange(text ? `${text}, ${chip.toLowerCase()} style` : `${chip} style`)
+  }
   return (
     <div className="max-w-2xl mx-auto rounded-2xl bg-neutral-900 p-4 shadow-xl">
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        placeholder="Describe the image you want to create… be detailed for best results"
+        placeholder={placeholder ?? "Describe the image you want to create… be detailed for best results"}
         className="w-full bg-transparent text-white placeholder:text-neutral-500 text-sm resize-none outline-none"
         aria-label="Image prompt"
       />
+      {styleChips && styleChips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {styleChips.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => applyChip(chip)}
+              className="rounded-full px-3 py-1 text-xs font-medium border border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white transition"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex items-center justify-between mt-2 gap-2">
         <span className="text-xs text-neutral-400 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />

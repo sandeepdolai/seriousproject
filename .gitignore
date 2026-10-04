@@ -63,3 +63,4 @@ public/uploads/*
 public/results/*
 !public/uploads/.gitkeep
 !public/results/.gitkeep
+tool-results/

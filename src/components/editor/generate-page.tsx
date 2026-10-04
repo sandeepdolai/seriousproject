@@ -105,11 +105,12 @@ export function GeneratePage() {
   )
 
   // Prefill from ?prompt= handoff (e.g. the AI Image Generator landing page).
+  // Depends on route.query so it re-runs after the router resolves the hash
+  // (the initial render still sees the "/" placeholder route).
   useEffect(() => {
     const handed = route.query.get("prompt")
     if (handed) setPrompt(handed)
-     
-  }, [])
+  }, [route.query])
 
   const loadProjects = useCallback(async () => {
     try {

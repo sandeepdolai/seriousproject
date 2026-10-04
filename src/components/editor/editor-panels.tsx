@@ -4,7 +4,11 @@ import { useState } from "react"
 import {
   ChevronDown,
   Eye,
+  History,
   Loader2,
+  Palette,
+  ScanFace,
+  Shirt,
   Sparkles,
 } from "lucide-react"
 import type { CSSProperties } from "react"
@@ -53,6 +57,54 @@ const SWATCHES: { label: string; color: string | null; style?: CSSProperties }[]
   },
 ]
 
+export interface ResizeRequest {
+  preset?: string
+  width?: number
+  height?: number
+  fit?: "cover" | "contain"
+}
+
+export const RESIZE_PRESETS: { key: string; label: string; dims: string }[] = [
+  { key: "instagramPost", label: "Instagram post", dims: "1080×1080" },
+  { key: "instagramPortrait", label: "Instagram portrait", dims: "1080×1350" },
+  { key: "instagramStory", label: "Story / Reel", dims: "1080×1920" },
+  { key: "youtubeThumb", label: "YouTube thumbnail", dims: "1280×720" },
+  { key: "xPost", label: "X post", dims: "1600×900" },
+  { key: "facebookCover", label: "Facebook cover", dims: "1640×924" },
+  { key: "linkedinCover", label: "LinkedIn banner", dims: "1584×396" },
+  { key: "profile", label: "Profile picture", dims: "800×800" },
+  { key: "print4x6", label: "Print 4×6", dims: "1200×1800" },
+  { key: "print8x10", label: "Print 8×10", dims: "2400×3000" },
+]
+
+export const PROFILE_STYLES: { key: string; label: string; hint: string }[] = [
+  { key: "studio", label: "Studio", hint: "Soft gray backdrop, pro light" },
+  { key: "gradient", label: "Gradient", hint: "Vibrant modern backdrop" },
+  { key: "outdoor", label: "Outdoor", hint: "Warm natural daylight" },
+  { key: "bw", label: "Black & white", hint: "Timeless monochrome" },
+  { key: "linkedin", label: "LinkedIn", hint: "Clean professional headshot" },
+]
+
+export const TRYON_PRESETS = [
+  "an elegant flowing coral summer dress",
+  "a casual denim jacket with a white tee",
+  "a cream knit sweater with wide-leg trousers",
+  "a tailored charcoal blazer",
+]
+
+export const RECOLOR_COLORS: { label: string; hex: string }[] = [
+  { label: "Red", hex: "#E02424" },
+  { label: "Blue", hex: "#2563EB" },
+  { label: "Green", hex: "#16A34A" },
+  { label: "Yellow", hex: "#FACC15" },
+  { label: "Purple", hex: "#9333EA" },
+  { label: "Pink", hex: "#EC4899" },
+  { label: "Orange", hex: "#F97316" },
+  { label: "Teal", hex: "#14B8A6" },
+  { label: "White", hex: "#FFFFFF" },
+  { label: "Black", hex: "#111827" },
+]
+
 export interface PanelBundle {
   entryTool: string
   presetPrompt: string
@@ -67,6 +119,7 @@ export interface PanelBundle {
   onShadowToggle: (on: boolean) => void
   blurValue: number
   onBlurCommit: (value: number) => void
+  onBlurApply: (value: number) => void
   onCompareToggle: () => void
   onRetouch: (target: string) => void
   onGenerativeFill: (prompt: string) => void
@@ -78,6 +131,12 @@ export interface PanelBundle {
   onUpscaleScale: (scale: number) => void
   onUpscale: () => void
   onEnhance: () => void
+  onColorize: () => void
+  onRestore: (colorize: boolean) => void
+  onRecolor: (target: string, color: string) => void
+  onResize: (request: ResizeRequest) => void
+  onTryOn: (garment: string, model: string) => void
+  onProfilePicture: (style: string) => void
 }
 
 function ActionButton({
@@ -565,6 +624,400 @@ function EnhancePanel({ bundle }: { bundle: PanelBundle }) {
   )
 }
 
+/* ---------------- Blur panel ---------------- */
+
+function BlurPanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [value, setValue] = useState(bundle.blurValue)
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Blur background</h3>
+      <p className="text-xs text-gray-500 mb-4">
+        Keep the subject in sharp focus while the background melts into smooth
+        bokeh, like a fast portrait lens.
+      </p>
+      <div className="flex items-center gap-3 mb-4">
+        <Slider
+          value={[value]}
+          min={1}
+          max={10}
+          step={1}
+          onValueChange={(v) => setValue(v[0] ?? value)}
+          aria-label="Background blur intensity"
+          className="flex-1"
+        />
+        <span className="text-xs text-gray-500 w-6 text-right tabular-nums">
+          {value}
+        </span>
+      </div>
+      <ActionButton
+        onClick={() => bundle.onBlurApply(value)}
+        disabled={!bundle.hasImage}
+        loading={busy}
+      >
+        Apply blur
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
+/* ---------------- Colorize panel ---------------- */
+
+function ColorizePanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Colorize photo</h3>
+      <p className="text-xs text-gray-500 mb-4">
+        Add natural, realistic color to black and white photos. Skin, clothing,
+        and scenery get plausible colors while faces stay exactly as they are.
+      </p>
+      <ActionButton
+        onClick={bundle.onColorize}
+        disabled={!bundle.hasImage}
+        loading={busy}
+      >
+        <Palette className="w-4 h-4" aria-hidden="true" />
+        Colorize photo
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
+/* ---------------- Restore panel ---------------- */
+
+function RestorePanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [colorize, setColorize] = useState(true)
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Restore photo</h3>
+      <p className="text-xs text-gray-500 mb-4">
+        Repair scratches, tears, stains, and fading on old photos — without
+        changing the subject's face or identity.
+      </p>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs text-gray-500">Add color after restoring</span>
+        <Switch
+          checked={colorize}
+          onCheckedChange={setColorize}
+          aria-label="Colorize after restore"
+        />
+      </div>
+      <ActionButton
+        onClick={() => bundle.onRestore(colorize)}
+        disabled={!bundle.hasImage}
+        loading={busy}
+      >
+        <History className="w-4 h-4" aria-hidden="true" />
+        Restore photo
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
+/* ---------------- Recolor panel ---------------- */
+
+function RecolorPanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [target, setTarget] = useState("")
+  const [color, setColor] = useState(RECOLOR_COLORS[0].hex)
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Recolor</h3>
+      <label htmlFor="recolor-target" className="text-sm text-gray-600 block mb-2">
+        Which item should we recolor?
+      </label>
+      <Input
+        id="recolor-target"
+        value={target}
+        onChange={(e) => setTarget(e.target.value)}
+        placeholder="e.g. the shirt"
+        disabled={busy}
+        className="mb-4"
+      />
+      <p className="text-sm text-gray-600 block mb-2">Pick a color</p>
+      <div className="grid grid-cols-5 gap-2 mb-4">
+        {RECOLOR_COLORS.map((swatch) => (
+          <button
+            key={swatch.hex}
+            type="button"
+            title={swatch.label}
+            aria-label={`Recolor to ${swatch.label}`}
+            aria-pressed={color === swatch.hex}
+            disabled={busy}
+            onClick={() => setColor(swatch.hex)}
+            className={cn(
+              "w-8 h-8 rounded-full border transition disabled:opacity-40",
+              color === swatch.hex
+                ? "ring-2 ring-offset-2 ring-neutral-900 border-neutral-400"
+                : "border-gray-200 hover:border-gray-400"
+            )}
+            style={{ backgroundColor: swatch.hex }}
+          />
+        ))}
+      </div>
+      <ActionButton
+        onClick={() => bundle.onRecolor(target, color)}
+        disabled={!bundle.hasImage || !target.trim()}
+        loading={busy}
+      >
+        Recolor item
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
+/* ---------------- Resize panel ---------------- */
+
+function ResizePanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [preset, setPreset] = useState<string | null>(null)
+  const [width, setWidth] = useState("")
+  const [height, setHeight] = useState("")
+  const [fit, setFit] = useState<"cover" | "contain">("cover")
+
+  const customValid =
+    (width.trim().length > 0 || height.trim().length > 0) &&
+    (width.trim() === "" || (/^\d+$/.test(width) && Number(width) > 0)) &&
+    (height.trim() === "" || (/^\d+$/.test(height) && Number(height) > 0))
+
+  function apply() {
+    if (preset) {
+      bundle.onResize({ preset })
+    } else {
+      bundle.onResize({
+        width: width.trim() ? Number(width) : undefined,
+        height: height.trim() ? Number(height) : undefined,
+        fit,
+      })
+    }
+  }
+
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Resize image</h3>
+      <p className="text-xs text-gray-500 mb-3">
+        Ready-made sizes for every platform, or enter exact pixel dimensions.
+      </p>
+      <div className="space-y-1.5 max-h-64 overflow-y-auto pc-scroll pr-1">
+        {RESIZE_PRESETS.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setPreset(preset === option.key ? null : option.key)
+              setWidth("")
+              setHeight("")
+            }}
+            aria-pressed={preset === option.key}
+            className={cn(
+              "w-full flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition disabled:opacity-50",
+              preset === option.key
+                ? "border-black bg-black text-white"
+                : "border-gray-200 text-gray-700 hover:border-gray-400"
+            )}
+          >
+            <span>{option.label}</span>
+            <span
+              className={cn(
+                "text-xs tabular-nums",
+                preset === option.key ? "text-neutral-300" : "text-gray-400"
+              )}
+            >
+              {option.dims}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="border-t border-gray-100 mt-3 pt-3">
+        <p className="text-sm text-gray-600 mb-2">Custom size</p>
+        <div className="flex items-center gap-2 mb-2">
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={width}
+            onChange={(e) => {
+              setWidth(e.target.value)
+              setPreset(null)
+            }}
+            placeholder="Width"
+            aria-label="Target width in pixels"
+            disabled={busy}
+            className="h-9"
+          />
+          <span className="text-gray-400" aria-hidden="true">×</span>
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={height}
+            onChange={(e) => {
+              setHeight(e.target.value)
+              setPreset(null)
+            }}
+            placeholder="Height"
+            aria-label="Target height in pixels"
+            disabled={busy}
+            className="h-9"
+          />
+        </div>
+        {width.trim() !== "" && height.trim() !== "" && (
+          <div className="flex gap-1.5 mb-2">
+            <button
+              type="button"
+              onClick={() => setFit("cover")}
+              aria-pressed={fit === "cover"}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium border transition",
+                fit === "cover"
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+              )}
+            >
+              Crop to fill
+            </button>
+            <button
+              type="button"
+              onClick={() => setFit("contain")}
+              aria-pressed={fit === "contain"}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium border transition",
+                fit === "contain"
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+              )}
+            >
+              Fit with padding
+            </button>
+          </div>
+        )}
+      </div>
+
+      <ActionButton
+        onClick={apply}
+        disabled={!bundle.hasImage || (!preset && !customValid)}
+        loading={busy}
+      >
+        Resize image
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
+/* ---------------- Try-on panel ---------------- */
+
+function TryOnPanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [garment, setGarment] = useState("")
+  const [model, setModel] = useState("")
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Virtual try-on</h3>
+      <label htmlFor="tryon-garment" className="text-sm text-gray-600 block mb-2">
+        What should they wear?
+      </label>
+      <textarea
+        id="tryon-garment"
+        value={garment}
+        onChange={(e) => setGarment(e.target.value)}
+        rows={2}
+        placeholder="e.g. an elegant coral summer dress"
+        disabled={busy}
+        className="w-full rounded-lg border border-gray-200 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300 resize-none mb-2"
+      />
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {TRYON_PRESETS.map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            disabled={busy}
+            onClick={() => setGarment(preset)}
+            className="rounded-full px-2.5 py-1 text-xs border border-gray-200 text-gray-600 hover:border-gray-400 transition disabled:opacity-50"
+          >
+            {preset.replace(/^(a|an) /, "").slice(0, 24)}
+          </button>
+        ))}
+      </div>
+      <label htmlFor="tryon-model" className="text-sm text-gray-600 block mb-2">
+        Model look (optional)
+      </label>
+      <Input
+        id="tryon-model"
+        value={model}
+        onChange={(e) => setModel(e.target.value)}
+        placeholder="e.g. a young woman with curly hair"
+        disabled={busy}
+        className="mb-3"
+      />
+      <ActionButton
+        onClick={() => bundle.onTryOn(garment, model)}
+        disabled={!bundle.hasImage || !garment.trim()}
+        loading={busy}
+      >
+        <Shirt className="w-4 h-4" aria-hidden="true" />
+        Try it on · 1 credit
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">
+        Uses 1 credit. Sign in required.
+      </p>
+    </div>
+  )
+}
+
+/* ---------------- Profile picture panel ---------------- */
+
+function ProfilePanel({ bundle }: { bundle: PanelBundle }) {
+  const busy = bundle.processing !== null
+  const [style, setStyle] = useState(PROFILE_STYLES[0].key)
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3 text-neutral-900">Profile picture</h3>
+      <p className="text-xs text-gray-500 mb-3">
+        Turn any selfie into a polished headshot. The face stays yours — only
+        the framing, light, and background change.
+      </p>
+      <div className="space-y-1.5 mb-4">
+        {PROFILE_STYLES.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            disabled={busy}
+            onClick={() => setStyle(option.key)}
+            aria-pressed={style === option.key}
+            className={cn(
+              "w-full text-left rounded-lg border px-3 py-2 transition disabled:opacity-50",
+              style === option.key
+                ? "border-black bg-gray-50"
+                : "border-gray-200 hover:border-gray-400"
+            )}
+          >
+            <span className="text-sm font-medium text-neutral-900 block">
+              {option.label}
+            </span>
+            <span className="text-xs text-gray-500">{option.hint}</span>
+          </button>
+        ))}
+      </div>
+      <ActionButton
+        onClick={() => bundle.onProfilePicture(style)}
+        disabled={!bundle.hasImage}
+        loading={busy}
+      >
+        <ScanFace className="w-4 h-4" aria-hidden="true" />
+        Make profile picture
+      </ActionButton>
+      <p className="text-[11px] text-gray-400 mt-2">Free — no credit needed.</p>
+    </div>
+  )
+}
+
 /* ---------------- Switcher ---------------- */
 
 export function PanelContent({
@@ -585,5 +1038,19 @@ export function PanelContent({
       return <UpscalePanel bundle={bundle} />
     case "enhance":
       return <EnhancePanel bundle={bundle} />
+    case "blur":
+      return <BlurPanel bundle={bundle} />
+    case "colorize":
+      return <ColorizePanel bundle={bundle} />
+    case "restore":
+      return <RestorePanel bundle={bundle} />
+    case "recolor":
+      return <RecolorPanel bundle={bundle} />
+    case "resize":
+      return <ResizePanel bundle={bundle} />
+    case "tryon":
+      return <TryOnPanel bundle={bundle} />
+    case "profile":
+      return <ProfilePanel bundle={bundle} />
   }
 }

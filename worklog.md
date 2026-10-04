@@ -120,3 +120,60 @@ Stage Summary:
 - Project live on GitHub at sandeepdolai/seriousproject (main branch).
 - Dev server verified running on :3000 with final state; lint 0 errors.
 - External dependencies documented for final report: RESEND_API_KEY (email delivery), GOOGLE_CLIENT_ID/APPLE_CLIENT_ID (social auth), STRIPE_SECRET_KEY (checkout), video processing API (video bg removal). All have working fallbacks/stubs; nothing blocks the core app.
+
+---
+Task ID: 7-a
+Agent: research-agent
+Task: Research structure of 12 missing pixelcut tool pages
+
+Work Log:
+- Read worklog.md (tasks 1-6: app complete, 10 pages already built; these 12 pages are the next batch).
+- Fetched all 12 URLs + background-remover (baseline) with curl + browser UA into /tmp/pcpages (no images downloaded, no large files kept in project).
+- Wrote python extractors (analyze.py/sections.py/outline.py/hero.py): title, meta description, H1-H4 (deduped), section outline, JSON-LD types (WebPage/FAQPage/HowTo/BreadcrumbList), FAQ questions, HowTo steps, hero controls (upload/prompt/select/textarea), sample-image thumbs ("Don't have a photo? Try one of these"), USP alternating-row counts, explore-more pill links, badges, CTA labels, hero media type (image vs autoplay video), before/after + use-case-tab checks (all negative), /tools card grid + link map.
+- Verified hero composition per page (hero img vs demo video vs sample thumbs), how-to card markup (dark bg-ui-selected card, ol grid, numbered step cards), USP rows (grid-cols-2 alternating image/text, space-y-24/32), FAQ accordion (h3 + chevron), testimonials (same 3 reviews), Explore more (rounded pill links), /tools grid classes (grid-cols-1/2/3/4, ~74 cards: 32 video + 43 image, alphabetical, no categories/search).
+
+Stage Summary:
+- Layout families found:
+  - FAMILY A "standard tool page" (9 pages: blur-background, photo-enhancer, ai-background-generator, colorize-photo, photo-restoration, recolor, resize-image, profile-picture-maker, virtual-try-on): breadcrumb hero (H1 + sub + badges "Free HD Download"/"No watermark" + upload dropzone w/ format-note + terms note + social-proof 70M/918,707 Reviews + Developer API + iPhone & Android links; right side hero image or autoplay demo video, 3 sample thumbs on 4 pages) → dark "How to" card (3-5 numbered steps, ol grid 2-col) → USP alternating image+text rows (3-6; photo-enhancer has 6th text-only row) → "Trusted by creatives at" logo row (19 logos) → FAQ accordion (3-9 Qs, JSON-LD FAQPage) → "Pixelcut is loved by over 2 million people" testimonials (3) → "Explore more" pill links (7-10) → footer. Diffs: CTA label (Upload image / Enhance photo / Upload photo / Upload clothing); how-to steps count/names; USP row count; FAQ count; hero media (video on blur + photo-enhancer; samples on photo-enhancer, ai-background-generator, colorize-photo, photo-restoration). NO use-case tabs, NO before/after sliders, NO sample images on blur/recolor/resize/pfp/try-on.
+  - FAMILY B "generator pages": ai-logos = Family A skeleton but hero replaced by prompt form (textarea "describe your business" + 6 style chips Modern/Cartoon/Futuristic/Monogram/Victorian/Mascot + Generate button; 12-logo preview image; no upload zone/terms) — 3 how-to steps, 3 USP rows, 3 FAQs. ai-art-generator = prompt hero (text input + "Add image" + 1:1 ratio chip + model select + Generate; badges "Free to try"/"No watermarks"; art-trio preview) + 4 feature cards (Lightning fast/Pro quality/Versatile/Affordable) + 6 USP rows (incl "Use cases for artists..." + "Tips for creating amazing art" rows) + 4-step how-to + full embedded pricing section (Monthly/Yearly, Free $0 / Pro $10→$8 Most Popular / Business $30→$24, Stripe note, trust line) + 5 FAQs.
+  - FAMILY C /tools index: H1 "All tools" + meta subtitle, flat grid-cols-1/2/3/4 of ~74 tool cards (square aspect-1 rounded media — 32 autoplay videos + 43 images — + centered h3 name), alphabetical, NO category headings/search/FAQ/upload; includes model pages (Flux/Ideogram/Veo/Kling/Runway/Hailuo/Luma) and conversion/compression sub-tools.
+- FAQ question lists, HowTo step names, meta titles/descriptions, and Explore-more pill sets captured per page (full detail in this task's final report; JSON-LD HowTo/FAQPage/BreadcrumbList present on all 11 tool pages, /tools has WebSite+WebPage only).
+- All pages server-rendered (React Router SSR + RSC payload): headings, JSON-LD, FAQ text, upload zone copy all in initial HTML → same component architecture as our existing tool-page.tsx can be reused with per-page config.
+
+---
+Task ID: 7-e
+Agent: image-generation-agent
+Task: Generate new tool demo images
+
+Work Log:
+- Read worklog.md (tasks 1-6 + 7-a) and skills/image-edit/SKILL.md to learn exact CLI usage (`z-ai image -p ... -o ... -s ...` for generation; `z-ai image-edit` documented for edits).
+- Tried `z-ai image-edit -i <local path>` for the blur pair → failed with upstream 400 "image_to_image task must provide images" (CLI does not inline local files as base64), so wrote a small bun script (SDK: zai.images.generations.edit with images:[{url:dataUrl}], sharp re-encode to true PNG) and used it for all 4 after-images; temp script deleted afterwards.
+- Generated 4 TRUE before/after pairs at 1024x1024 (before via `z-ai image`, after via SDK edit of the before file so pairs match subject-for-subject): ba-blur (market portrait → creamy bokeh background), ba-colorize (1950s B&W family+car → natural colorization), ba-restore (1920s scratched/creased portrait → restored clean B&W), ba-recolor (forest green t-shirt → cherry red, pose/background preserved).
+- Generated 12 single images: sample-colorize (1940s noir umbrella street), sample-restore (faded 1970s grandmother+baby), art-1 (fantasy floating island), art-2 (jellyfish balloon oil painting), art-3 (cyberpunk anime Tokyo), logos-1 (4x3 grid of 12 minimal logos), profilepic-1/2/3 (corporate gray / purple gradient / golden-hour senior headshots), tryon-1/2/3 (full-body fashion models at 768x1344).
+- Ran all generations sequentially (no parallel calls, no rate failures, no retries needed). Verified every file exists and is >10KB; verified dimensions via `file` (1024x1024 squares, 768x1344 tryon). No existing project files modified — only new images added.
+
+Stage Summary:
+- 20 new PNG files in public/images/: ba-blur-before/after, ba-colorize-before/after, ba-restore-before/after, ba-recolor-before/after (4 matched pairs), sample-colorize, sample-restore, art-1, art-2, art-3, logos-1, profilepic-1, profilepic-2, profilepic-3, tryon-1, tryon-2, tryon-3.
+- Sizes range 79KB-2.3MB, all valid images (CLI outputs are JPEG-in-.png containers matching the existing 54-asset convention; the 4 edited "after" images are true PNGs). Ready for the 12 new tool pages (blur-background, colorize-photo, photo-restoration, recolor, ai-logos, ai-art-generator, profile-picture-maker, virtual-try-on samples).
+- Note for future agents: `z-ai image-edit` CLI rejects local file paths (upstream 400) — use zai.images.generations.edit with images:[{url: dataUrl}] via a bun script for local edits.
+
+---
+Task ID: 7 (a–g)
+Agent: main-orchestrator (Z.ai Code)
+Task: Complete all missing tool pages from the pixelcut.ai sitemap — front to end (12 tools + /tools index)
+
+Work Log:
+- 7-a research: extracted structure of the 12 missing tool pages + /tools index from the sitemap (layout families, section outlines, FAQ counts). All page copy written originally (no reference text copied).
+- 7-b backend: added 6 new API routes — /api/tools/colorize (free), /restore (free, colorize toggle), /recolor (target+color, free), /virtual-try-on (login+1 credit), /profile-picture (5 styles, free), /resize (sharp-based non-AI: 10 social presets + custom W/H 1–12000, cover/contain, format-preserving, project rows for logged-in users).
+- 7-e images: generated 20 new assets (true before/after pairs via SDK edit for blur/colorize/restore/recolor; samples for colorize/restore; art trio; logo grid; profile styles; try-on models).
+- 7-c frontend: added 11 tool configs (blur-background, photo-enhancer, ai-background-generator, colorize-photo, photo-restoration, recolor, resize-image, ai-art-generator, ai-logos, profile-picture-maker, virtual-try-on) with original H1/descriptions/features/how-tos/FAQs/SEO sections; extended ToolConfig with ctaLabel/styleChips/showPricing; tool-page now renders style chips (prompt-appending), embedded compact pricing (monthly/yearly toggle), custom CTA labels; breadcrumb links to /tools.
+- 7-d editor: extended EditorRail to 12 tools (added Blur, Colorize, Restore, Recolor, Resize, Try On, Profile panels); PanelBundle +7 handlers; PANEL_BY_TOOL wired for all new entry tools; AUTO_TOOLS now auto-runs colorize + restore on upload; runAuto generalized to 4 endpoints.
+- 7-f routing/nav: ROUTES + page.tsx now resolve any ToolPageConfig path generically; new /tools index page (searchable 20-card grid); header Edit/Generate dropdowns + mobile drawer + footer tools column updated with all new tools.
+- Fixed: generate-page prompt prefill effect had [] deps (ran before router resolved hash) → now depends on route.query; verified prompt handoff from ai-logos/art pages.
+- 7-g QA (agent-browser, desktop + 390px mobile): /tools renders 20 cards; every new landing page H1 renders with images loaded; editor flows verified end-to-end with real AI calls — blur (17s), colorize auto-run (15s), restore auto-run (15s), recolor (15s), resize preset→1080×1080 + custom, virtual try-on 401→login(devCode)→200 (credits 10→8), profile picture (16s), enhance with credit (14s), generate-background prompt→result; logo/art style chips append to prompt and hand off to /generate; mobile rail scrollable + panel drawer opens Resize; no horizontal overflow; no console/page errors (only pre-existing DialogContent a11y warning). Lint 0 errors, tsc 0 errors.
+- Cleaned all QA data (users/projects/sessions/codes/results/uploads, browser cookies/localStorage).
+
+Stage Summary:
+- 20 tool landing pages now live (9 existing + 11 new) + /tools index; 8 new editor panels/flows all verified against the live backend.
+- APIs now total 19 tool endpoints. Free tools: remove-background, upscale, magic-eraser, generative-fill, uncrop, retouch, shadow, blur, colorize, restore, recolor, resize, profile-picture. Credit tools: generate, generate-background, enhance, product-photography, ai-ads, virtual-try-on.
+- Ready for Task 8 (GitHub push).

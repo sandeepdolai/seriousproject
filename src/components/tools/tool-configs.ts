@@ -47,6 +47,14 @@ export type EditorTool =
   | "productPhotography"
   | "video"
   | "aiAds"
+  | "enhance"
+  | "blur"
+  | "colorize"
+  | "restore"
+  | "recolor"
+  | "resize"
+  | "virtualTryOn"
+  | "profilePicture"
 
 export interface ToolConfig {
   /** Hash route of the tool landing page, e.g. "/background-remover" */
@@ -71,6 +79,12 @@ export interface ToolConfig {
   scenePresets?: ScenePreset[]
   /** Image Upscaler: show 2x/4x/8x/16x scale chips before upload */
   scaleOptions?: boolean
+  /** Custom label for the upload button (defaults to "Upload image") */
+  ctaLabel?: string
+  /** Generator pages: style chips that append to the prompt */
+  styleChips?: string[]
+  /** Generator pages: embed a compact pricing block */
+  showPricing?: boolean
 }
 
 const img = (name: string) => `/images/${name}.png`
@@ -851,6 +865,854 @@ export const ToolPageConfig: Record<string, ToolConfig> = {
           "Instead of booking talent, renting a location, and scheduling a shoot, describe the ad once and let the AI produce it. Iterate on the pitch and the look until the creative converts.",
         ],
         image: img("workflow-ugc"),
+      },
+    ],
+  },
+
+  "/blur-background": {
+    slug: "/blur-background",
+    name: "Blur Background",
+    h1: "Free blur background tool",
+    description:
+      "Blur the background of any photo online with AI. Keep your subject perfectly sharp while the background melts into smooth, creamy bokeh — free and no sign-up required.",
+    badges: ["Free HD Download", "No watermark"],
+    editorTool: "blur",
+    accepts: "image",
+    samples: [img("ba-blur-after"), img("sample-portrait"), img("sample-product")],
+    howTo: [
+      {
+        title: "Upload your image",
+        text: "Click Upload image and pick the photo you want to edit. JPG, PNG, and HEIC files up to 50MB are supported — portraits, product shots, and group photos all work.",
+      },
+      {
+        title: "Let the AI work",
+        text: "The AI finds your subject and separates it from the background automatically, so the blur lands only where it should — never on faces or products.",
+      },
+      {
+        title: "Adjust the blur amount",
+        text: "Want a stronger or softer effect? Move the intensity slider from a gentle 1 to a dreamy 10 and re-apply until the look is right.",
+      },
+      {
+        title: "Download your image",
+        text: "Save the finished photo in HD — free, with no watermark — or keep editing with the other tools in the editor.",
+      },
+    ],
+    features: [
+      {
+        title: "Portrait-mode results",
+        text: "Get the shallow depth-of-field look of a pro lens on any photo, even one shot on a phone.",
+      },
+      {
+        title: "Subject stays sharp",
+        text: "AI separation means hair, edges, and product detail keep their crispness while the background softens.",
+      },
+      {
+        title: "Adjustable intensity",
+        text: "Dial the bokeh from subtle to dramatic with a simple slider — no layers or masks.",
+      },
+      {
+        title: "Free, no sign-up",
+        text: "Blur as many photos as you like, anonymously, and download in HD without a watermark.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I blur the background of a photo?",
+        a: "Upload your photo and the AI detects the subject automatically. Choose a blur strength and apply — the background softens while your subject stays in focus.",
+      },
+      {
+        q: "Can I control how strong the blur is?",
+        a: "Yes. An intensity slider runs from 1 (barely there) to 10 (creamy bokeh). Re-apply with a new value as many times as you like.",
+      },
+      {
+        q: "What kinds of photos work best?",
+        a: "Any photo with a clear subject — portraits, pets, products, food. If a human eye can tell what the subject is, the AI can too.",
+      },
+      {
+        q: "Does the blur affect my subject?",
+        a: "No. The AI separates subject from background first, so the blur is applied only to the background layer.",
+      },
+      {
+        q: "Is the blur tool free?",
+        a: "Yes — background blur is completely free, works without an account, and results download in HD with no watermark.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "Blur image backgrounds online, automatically",
+        paragraphs: [
+          "Photographers spend thousands on fast lenses to get that buttery background separation. Our AI gives any photo the same treatment in seconds: the subject is detected, separated, and kept razor sharp while the background dissolves into smooth bokeh.",
+          "Because the separation happens automatically, there are no masks to paint and no depth maps to tune. Upload, choose an intensity, and download — the whole workflow takes under a minute.",
+        ],
+        image: img("ba-blur-after"),
+      },
+      {
+        h2: "Professional portraits and product shots",
+        paragraphs: [
+          "A blurred background puts attention exactly where it belongs. Portraits gain a polished, studio feel; product photos pop against a softly defocused scene instead of a cluttered one.",
+          "Shops use background blur to make smartphone product shots look intentional and premium — a quick win for listings and ad creative without re-shooting anything.",
+        ],
+        image: img("ba-blur-before"),
+      },
+    ],
+  },
+
+  "/photo-enhancer": {
+    slug: "/photo-enhancer",
+    name: "Photo Enhancer",
+    h1: "Online AI Photo Enhancer",
+    description:
+      "Fix blurry, dark, or low-quality photos in one click. Pixelcut's AI photo enhancer improves clarity, color, and lighting automatically — try it free online.",
+    badges: ["AI enhanced", "1-click fix"],
+    editorTool: "enhance",
+    accepts: "image",
+    ctaLabel: "Enhance photo",
+    samples: [img("ba-upscale-after"), img("sample-watch"), img("sample-man")],
+    howTo: [
+      {
+        title: "Upload your image",
+        text: "Click Enhance photo and select the picture you want to improve. JPG, PNG, and HEIC files up to 50MB are supported.",
+      },
+      {
+        title: "Enhance automatically",
+        text: "The AI analyzes your photo and corrects exposure, color balance, contrast, and sharpness in one pass — no sliders, no settings.",
+      },
+      {
+        title: "Download your improved photo",
+        text: "Save the enhanced result or continue editing — upscale it, remove the background, or add a new one, all in the same editor.",
+      },
+    ],
+    features: [
+      {
+        title: "Fix blurry photos",
+        text: "Recover crisp edges and fine detail that soft focus or motion blur took away.",
+      },
+      {
+        title: "Correct color and lighting",
+        text: "Dark, washed-out, or oddly tinted photos get balanced exposure and natural color.",
+      },
+      {
+        title: "One click, zero settings",
+        text: "No sliders or menus — the AI decides the right correction for each photo individually.",
+      },
+      {
+        title: "Works on any photo",
+        text: "Selfies, landscapes, product shots, and old scans — every photo gets its own tailored enhancement.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What does the photo enhancer do?",
+        a: "It analyzes your photo and automatically improves clarity, sharpness, exposure, contrast, and color balance in a single pass — like a professional retoucher doing a quick pass on your image.",
+      },
+      {
+        q: "Can it fix a blurry photo?",
+        a: "Yes. Soft-focus and mild motion blur are the most common fixes — the AI reconstructs edges and detail while keeping the photo natural.",
+      },
+      {
+        q: "Does enhancing increase resolution?",
+        a: "Enhancing improves quality — detail, color, and lighting. If you also need more pixels, follow up with the Image Upscaler in the same editor.",
+      },
+      {
+        q: "What's the difference between enhance and upscale?",
+        a: "Enhance makes a photo look better at its current size. Upscale makes a photo bigger. The two work great together: enhance first, then upscale.",
+      },
+      {
+        q: "Is the photo enhancer free?",
+        a: "Enhance is included with a free account and uses one credit per photo — new accounts come with starter credits to try it.",
+      },
+      {
+        q: "Does it work on old photos?",
+        a: "Yes. Faded color, low contrast, and softness from old scans and prints are exactly what the enhancer corrects. For scratched or damaged photos, try Photo Restoration.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "Enhance photo quality in one click",
+        paragraphs: [
+          "Most photos are one small correction away from looking great: a touch of exposure, a bit of sharpening, slightly richer color. The enhancer applies all of those corrections at once, tuned to each individual photo rather than a fixed preset.",
+          "Because the AI evaluates every image separately, a snowy landscape and an indoor selfie get completely different treatments — no washed-out winters, no orange skin tones.",
+        ],
+        image: img("ba-upscale-after"),
+      },
+      {
+        h2: "Rescue low-quality and compressed photos",
+        paragraphs: [
+          "Photos that traveled through messaging apps, old cameras, or heavy JPG compression lose detail and pick up artifacts. The enhancer cleans up compression damage, restores gradients, and brings back the snap that the file lost along the way.",
+          "It's the fastest first step in any edit: enhance, review, then decide whether the photo needs more — a background swap, an upscale, or a crop.",
+        ],
+      },
+    ],
+  },
+
+  "/ai-background-generator": {
+    slug: "/ai-background-generator",
+    name: "AI Background Generator",
+    h1: "Free AI Background Generator",
+    description:
+      "Generate a brand-new background for your photo with AI. Describe any scene and the AI paints it around your subject — studio, marble, beach, or anything you imagine.",
+    badges: ["Free with sign-in", "No watermark"],
+    editorTool: "generateBackground",
+    accepts: "image",
+    samples: [img("bg-marble"), img("bg-beach"), img("bg-studio-gray")],
+    howTo: [
+      {
+        title: "Upload your image",
+        text: "Start with any photo — the AI removes the existing background automatically as the first step, so no clean cutout is required.",
+      },
+      {
+        title: "Enter a prompt or choose a style",
+        text: "Describe the background you want (\"sunlit marble table with soft shadows\") or pick a ready-made preset like Studio, Beach, or Wood.",
+      },
+      {
+        title: "Generate the background",
+        text: "The AI paints your described scene behind your subject, matching perspective and lighting so the composite looks real.",
+      },
+      {
+        title: "Download your image",
+        text: "Save the finished photo or keep iterating — generate as many variations of the background as you like.",
+      },
+    ],
+    features: [
+      {
+        title: "Any scene you can describe",
+        text: "From clean studio backdrops to exotic locations — if you can write it, the AI can paint it.",
+      },
+      {
+        title: "Subject stays untouched",
+        text: "Your product or portrait is preserved exactly; only the environment around it changes.",
+      },
+      {
+        title: "Instant presets",
+        text: "Not feeling inspired? One click applies proven backdrops like marble, beach, or gradient.",
+      },
+      {
+        title: "Unlimited variations",
+        text: "Generate as many different backgrounds as you want — every try is a new take.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What is an AI background generator?",
+        a: "It's a tool that creates a completely new background for your photo from a text description. Your subject is kept as-is, and the AI paints the scene you describe around it.",
+      },
+      {
+        q: "Do I need a photo with the background already removed?",
+        a: "No. Upload any photo and the AI handles background removal as part of the process — you don't need a pre-made cutout.",
+      },
+      {
+        q: "How do I get a realistic result?",
+        a: "Describe the scene like a photographer would: the surface, the light, and the mood. \"A white marble table by a window with soft morning light\" beats \"marble background\".",
+      },
+      {
+        q: "Can I use my own background image instead?",
+        a: "Yes — the editor's Background panel also lets you place your subject over a preset backdrop image or any solid color.",
+      },
+      {
+        q: "Is it free?",
+        a: "Background generation is included with a free account and uses one credit per image. New accounts start with free credits to try it.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "Turn one photo into an entire set",
+        paragraphs: [
+          "Every product shot can live in dozens of scenes: the marble studio version, the beach lifestyle version, the moody city-bokeh version. Generating a new background costs nothing but a sentence — no studio, no props, no reshoots.",
+          "Because your subject never changes between takes, the whole set stays perfectly consistent — same product, same angle, same lighting on the subject, different world around it.",
+        ],
+        image: img("bg-marble"),
+      },
+      {
+        h2: "Backgrounds that match your subject's light",
+        paragraphs: [
+          "A convincing composite is all about light. The AI matches the direction and warmth of your described scene to the subject, so shadows and highlights fall the way they naturally would.",
+          "That's the difference between a background that looks pasted on and one that looks photographed — and it's the reason generated scenes hold up on marketplaces and in ad creative.",
+        ],
+        image: img("bg-beach"),
+      },
+    ],
+  },
+
+  "/colorize-photo": {
+    slug: "/colorize-photo",
+    name: "Colorize Photo",
+    h1: "Colorize black and white photos with AI",
+    description:
+      "Add natural, realistic color to old black and white photos with AI. Bring family history back to life in seconds — free and no sign-up required.",
+    badges: ["Free to use", "No sign-up"],
+    editorTool: "colorize",
+    accepts: "image",
+    ctaLabel: "Upload photo",
+    samples: [img("ba-colorize-after"), img("sample-colorize"), img("ba-colorize-before")],
+    howTo: [
+      {
+        title: "Upload your black and white photo",
+        text: "Click Upload photo and select a scan or photo of a monochrome picture. JPG, PNG, and HEIC up to 50MB are supported.",
+      },
+      {
+        title: "Colorize automatically",
+        text: "The AI studies the scene and adds plausible color — natural skin tones, era-appropriate clothing, believable environments — without changing the composition.",
+      },
+      {
+        title: "Download your colorized photo",
+        text: "Save the colorized version, or keep editing — restore damage, upscale resolution, or enhance detail in the same editor.",
+      },
+    ],
+    features: [
+      {
+        title: "One-click colorization",
+        text: "No color-wheels or layer masks — the AI picks every color for you, sensibly.",
+      },
+      {
+        title: "Natural, realistic tones",
+        text: "Skin, fabric, and foliage get colors that fit the scene and the era, not flat tints.",
+      },
+      {
+        title: "Faces stay untouched",
+        text: "Identity and expression are preserved exactly — only color is added.",
+      },
+      {
+        title: "Great for family history",
+        text: "Scan an old album print and see grandparents' world in color for the first time.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How does AI photo colorization work?",
+        a: "The model has learned what millions of real scenes look like in color. It recognizes the content of your photo — faces, clothing, sky, pavement — and applies colors that are statistically plausible for each element.",
+      },
+      {
+        q: "Are the colors historically accurate?",
+        a: "The colors are realistic and era-appropriate, but they're the AI's best guess — no algorithm can recover the true original colors from grayscale alone. Expect beautiful, believable results rather than a historical record.",
+      },
+      {
+        q: "Can it colorize a damaged photo?",
+        a: "Yes, and it usually improves it along the way. For heavily scratched or torn photos, Photo Restoration in the same editor does the repair work first.",
+      },
+      {
+        q: "Does colorizing improve quality too?",
+        a: "The colorize pass also gently lifts contrast and clarity. For a bigger quality jump, follow up with Enhance or the Image Upscaler.",
+      },
+      {
+        q: "Can I print the colorized photo?",
+        a: "Absolutely — download the result and print it like any photo. A follow-up upscale makes large prints crisper.",
+      },
+      {
+        q: "Is colorizing free?",
+        a: "Yes. Colorize is free, anonymous, and unlimited — no account and no watermark.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "Bring family history back to life",
+        paragraphs: [
+          "Most family albums start in black and white. Colorizing those photos changes how they feel — grandparents stop being historical figures and become people you might have met, in clothes you could have borrowed.",
+          "The whole process takes seconds: scan or photograph the old print, upload it, and let the AI add natural color while keeping every face exactly as it was.",
+        ],
+        image: img("ba-colorize-after"),
+      },
+      {
+        h2: "Realistic color from grayscale",
+        paragraphs: [
+          "Old-school colorization meant a retoucher hand-tinting print after print. The AI does something smarter: it understands the content of the photo and chooses colors that make sense — sky gets sky colors, wool gets wool colors, and the result looks photographed rather than painted.",
+          "Along with color, the pass gently improves contrast and clarity, so faded monochrome scans come back looking fresh without losing their character.",
+        ],
+      },
+    ],
+  },
+
+  "/photo-restoration": {
+    slug: "/photo-restoration",
+    name: "Photo Restoration",
+    h1: "AI photo restoration for old and damaged photos",
+    description:
+      "Repair scratches, tears, stains, and fading on old photos automatically with AI. Restore family pictures to their former glory — free, online, no sign-up.",
+    badges: ["Free to use", "No sign-up"],
+    editorTool: "restore",
+    accepts: "image",
+    ctaLabel: "Upload photo",
+    samples: [img("ba-restore-after"), img("sample-restore"), img("ba-restore-before")],
+    howTo: [
+      {
+        title: "Upload your old photo",
+        text: "Scan or photograph the damaged picture and upload it. Creases, scratches, stains, fading, and dust are all fair game.",
+      },
+      {
+        title: "Restore automatically",
+        text: "The AI repairs the damage, evens out fading, and recovers lost detail — while keeping the subject's face and identity completely unchanged.",
+      },
+      {
+        title: "Download your restored photo",
+        text: "Save the restored version in high resolution, or continue with colorization, enhancement, or upscaling in the same editor.",
+      },
+    ],
+    features: [
+      {
+        title: "Repairs real damage",
+        text: "Scratches, tears, stains, creases, dust, and water marks — the AI heals them all.",
+      },
+      {
+        title: "Faces stay the same",
+        text: "Restoration reconstructs, never re-imagines — the person in the result is the person in the original.",
+      },
+      {
+        title: "Fading reversed",
+        text: "Lost contrast and washed-out color come back, along with the sharpness age took away.",
+      },
+      {
+        title: "Optional colorization",
+        text: "Restore and colorize in one pass — or keep the classic black and white look.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What kinds of damage can be restored?",
+        a: "Scratches, creases, folded corners, stains, water damage, dust, mold spots, and heavy fading. Severely torn photos with missing pieces are reconstructed plausibly, though large missing areas are the hardest case.",
+      },
+      {
+        q: "Will the face change?",
+        a: "No. The restoration explicitly preserves the subject's identity — the AI repairs the damage around the face and recovers detail without re-drawing the person.",
+      },
+      {
+        q: "Can it restore color photos too?",
+        a: "Yes — faded, yellowed, or orange-shifted color prints are a common case. The AI rebalances color while repairing physical damage.",
+      },
+      {
+        q: "Does restoration also enlarge the photo?",
+        a: "The restore pass fixes damage and detail at the original size. For bigger prints, follow up with the Image Upscaler, which works beautifully on restored photos.",
+      },
+      {
+        q: "Can it add color to a restored photo?",
+        a: "Yes — colorization is built in. It runs by default; switch it off if you prefer an authentic black and white result.",
+      },
+      {
+        q: "Is photo restoration free?",
+        a: "Yes — restoration is free, anonymous, and unlimited. No account, no watermark.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "The album rescue kit",
+        paragraphs: [
+          "Every family has a shoebox of photos that age is slowly winning against — creased corners, water stains, colors drifting toward orange. Restoration gives those photos back: damage healed, fading reversed, detail recovered, faces untouched.",
+          "Photograph the print with your phone or scan it, upload, and the AI does in seconds what a professional restorer would charge by the hour to do.",
+        ],
+        image: img("ba-restore-after"),
+      },
+      {
+        h2: "Restored, not re-imagined",
+        paragraphs: [
+          "The difference between restoration and fabrication is fidelity. This tool is tuned to preserve — the person in the restored photo is recognizably the same person, in the same pose, wearing the same expression. Only the damage disappears.",
+          "That's what makes it safe for the photos that matter most: the ones of people you remember, not just images you like.",
+        ],
+        image: img("ba-restore-before"),
+      },
+    ],
+  },
+
+  "/recolor": {
+    slug: "/recolor",
+    name: "Recolor",
+    h1: "Recolor clothes instantly",
+    description:
+      "Change the color of any clothing item or object in your photo with AI. Perfect for fashion, e-commerce, and product variations — free online.",
+    badges: ["Free to use", "No sign-up"],
+    editorTool: "recolor",
+    accepts: "image",
+    samples: [img("ba-recolor-after"), img("ba-recolor-before"), img("sample-man")],
+    howTo: [
+      {
+        title: "Upload your image",
+        text: "Click Upload image and select a photo featuring the item you want to recolor. People, products, and flat-lays all work.",
+      },
+      {
+        title: "Select the item",
+        text: "Tell the AI which item to change — \"the shirt\", \"the sneakers\", \"the handbag\". Plain words, no brushing.",
+      },
+      {
+        title: "Change the color",
+        text: "Pick any color from the palette or a custom hex. The AI repaints the item with realistic folds, texture, and shading.",
+      },
+      {
+        title: "Download your image",
+        text: "Save the recolored photo — or generate a whole color range of the same shot for your store.",
+      },
+    ],
+    features: [
+      {
+        title: "Any item, any color",
+        text: "Clothes, accessories, furniture, walls — if you can name it, you can recolor it.",
+      },
+      {
+        title: "Texture-aware recoloring",
+        text: "Folds, fabric weave, and highlights follow the original — the item looks dyed, not painted.",
+      },
+      {
+        title: "Everything else untouched",
+        text: "Only the named item changes. The face, pose, background, and other objects stay identical.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I change the color of a shirt in a photo?",
+        a: "Upload the photo, type which item to recolor (e.g. \"the shirt\"), pick a color, and apply. The AI repaints just that item with realistic texture.",
+      },
+      {
+        q: "Can I recolor objects other than clothes?",
+        a: "Yes — the tool works on any identifiable item: shoes, bags, furniture, product packaging, walls, and more.",
+      },
+      {
+        q: "Can I recolor multiple items at once?",
+        a: "Run the tool once per item for the cleanest result — each pass names one target and keeps everything else fixed.",
+      },
+      {
+        q: "Is recoloring free?",
+        a: "Yes. Recolor is free, anonymous, and unlimited — no sign-up, no watermark.",
+      },
+    ],
+  },
+
+  "/resize-image": {
+    slug: "/resize-image",
+    name: "Image Resizer",
+    h1: "Free online image resizer",
+    description:
+      "Resize and crop images to any dimension or ready-made social media preset — Instagram, YouTube, X and more. Fast, free, and no quality loss.",
+    badges: ["Free HD Download", "No watermark"],
+    editorTool: "resize",
+    accepts: "image",
+    samples: [img("mosaic-2"), img("mosaic-4"), img("mosaic-6")],
+    howTo: [
+      {
+        title: "Upload your image",
+        text: "Click Upload image and select any JPG, PNG, or WebP up to 50MB.",
+      },
+      {
+        title: "Resize your image",
+        text: "Pick a social preset (Instagram post, story, YouTube thumbnail…) or enter exact width and height in pixels. Choose crop-to-fill or fit-with-padding.",
+      },
+      {
+        title: "Download your resized image",
+        text: "Save the result — resolution is preserved or improved, never upscaled beyond what the source allows. Free, no watermark.",
+      },
+    ],
+    features: [
+      {
+        title: "Exact pixel control",
+        text: "Enter any width and height, or scale by a single dimension while keeping the aspect ratio.",
+      },
+      {
+        title: "Social media presets",
+        text: "One tap for Instagram posts and stories, YouTube thumbnails, X posts, LinkedIn banners, and profile pictures.",
+      },
+      {
+        title: "Crop or pad",
+        text: "Fill the frame with a centered crop, or fit the whole image with clean padding — your choice.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I resize an image online for free?",
+        a: "Upload your image, choose a preset or enter the exact dimensions you need, and download. The whole process is free and requires no sign-up.",
+      },
+      {
+        q: "Will resizing reduce quality?",
+        a: "No — resizing uses high-quality resampling. Results are saved at up to 92 quality, and since images are only ever scaled down (or kept), no detail is invented or lost to upscaling artifacts.",
+      },
+      {
+        q: "What's the maximum size?",
+        a: "You can set any target dimension up to 12,000 pixels per side, and upload source images up to 50MB.",
+      },
+      {
+        q: "Does it work for social media sizes?",
+        a: "Yes — common presets are built in: Instagram post (1080×1080), portrait (1080×1350), story (1080×1920), YouTube thumbnail (1280×720), X post (1600×900), LinkedIn banner (1584×396), and profile pictures (800×800).",
+      },
+    ],
+  },
+
+  "/ai-art-generator": {
+    slug: "/ai-art-generator",
+    name: "AI Art Generator",
+    h1: "AI Art Generator",
+    description:
+      "Create stunning AI art from a text description. Pick a style, describe your idea, and generate high-resolution artwork in seconds — free to try.",
+    badges: ["Free to try", "No watermarks"],
+    editorTool: "generate",
+    accepts: "image",
+    samples: [img("art-1"), img("art-2"), img("art-3"), img("mosaic-1")],
+    styleChips: ["Digital painting", "Oil painting", "Anime", "Watercolor", "3D render", "Pixel art", "Cyberpunk", "Minimalist"],
+    showPricing: true,
+    howTo: [
+      {
+        title: "Enter your text prompt",
+        text: "Describe the artwork you imagine — subject, style, mood, colors. The more specific the description, the closer the result.",
+      },
+      {
+        title: "Pick a style",
+        text: "Optional style chips like \"Digital painting\" or \"Anime\" steer the model toward a look — or write the style directly in your prompt.",
+      },
+      {
+        title: "Generate art",
+        text: "Hit Generate and watch the model paint your idea in high resolution. Not quite right? Tweak the prompt and go again.",
+      },
+      {
+        title: "Download your artwork",
+        text: "Save the image you love, or keep iterating — every generation is a new interpretation of your idea.",
+      },
+    ],
+    features: [
+      {
+        title: "Lightning fast",
+        text: "Full-resolution art in seconds — no brushes, no layers, no waiting.",
+      },
+      {
+        title: "Any style",
+        text: "Painterly, photographic, anime, 3D, abstract — the model follows the style you describe.",
+      },
+      {
+        title: "High resolution",
+        text: "Generate in print-ready resolutions up to 1024px per side and upscale beyond.",
+      },
+      {
+        title: "Free to try",
+        text: "New accounts include starter credits — your first artworks are on us.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What is an AI art generator?",
+        a: "It's a tool that turns a text description into an original image. You write what you want to see — style, subject, mood — and the AI model paints it from scratch.",
+      },
+      {
+        q: "How do I write a good prompt?",
+        a: "Name the subject, the style, and the mood. \"A lighthouse in a storm, oil painting style, dramatic lighting\" gives the model everything it needs; \"lighthouse\" doesn't.",
+      },
+      {
+        q: "Can I use AI art commercially?",
+        a: "Yes — images you generate are yours to use, including for commercial projects like covers, ads, and merch.",
+      },
+      {
+        q: "Is the AI art generator free?",
+        a: "It's free to try — every account starts with credits. Each generation uses one credit; monthly credits refresh on paid plans.",
+      },
+      {
+        q: "Who owns the art I generate?",
+        a: "You do. Generate it, download it, use it — the artwork comes with no watermark and no licensing complications.",
+      },
+    ],
+    seoSections: [
+      {
+        h2: "From words to masterpieces",
+        paragraphs: [
+          "Every piece of art starts the same way: an idea. The gap between the idea and the canvas is where most people stop. An AI art generator closes that gap — you describe the picture in your head, and the model renders it in high resolution while the idea is still fresh.",
+          "Iterate at the speed of thought: keep the parts that work, adjust the parts that don't, and regenerate in seconds. A hundred variations of a concept cost an evening, not a month.",
+        ],
+        image: img("art-1"),
+      },
+      {
+        h2: "Styles as easy as words",
+        paragraphs: [
+          "Digital painting, oil on canvas, anime, watercolor, 3D render, pixel art — each style is just a phrase away. Combining them is where it gets fun: \"a watercolor city with neon cyberpunk lighting\" is a perfectly valid prompt.",
+          "The same idea rendered in five styles gives you five directions for a project — mood boards, concept art, book covers, or album art, explored in minutes.",
+        ],
+        image: img("art-3"),
+      },
+    ],
+  },
+
+  "/ai-logos": {
+    slug: "/ai-logos",
+    name: "AI Logo Generator",
+    h1: "AI Logo Generator",
+    description:
+      "Design a professional logo with AI in seconds. Describe your business, pick a style, and generate polished logo concepts — free to try online.",
+    badges: ["Free HD Download", "No watermark"],
+    editorTool: "generate",
+    accepts: "image",
+    samples: [img("logos-1"), img("mosaic-5"), img("mosaic-3")],
+    styleChips: ["Modern", "Cartoon", "Futuristic", "Monogram", "Vintage", "Mascot"],
+    howTo: [
+      {
+        title: "Describe your business",
+        text: "Tell the AI what your brand does and what it stands for — \"a cozy neighborhood coffee roastery\" beats \"coffee shop\".",
+      },
+      {
+        title: "Choose a style",
+        text: "Modern, cartoon, futuristic, monogram, vintage, or mascot — pick the personality that fits your brand.",
+      },
+      {
+        title: "Generate and download",
+        text: "Get polished logo concepts in seconds. Download the one you love, or regenerate with a tweaked description.",
+      },
+    ],
+    features: [
+      {
+        title: "From brief to logo in seconds",
+        text: "No design experience, no vector software — just describe your business.",
+      },
+      {
+        title: "Six design directions",
+        text: "Explore clean modern marks, playful cartoons, futuristic geometry, classic monograms, and more.",
+      },
+      {
+        title: "Polished, usable results",
+        text: "Concepts come back clean and centered — ready for a profile picture, a business card, or a website header.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I create a logo with AI?",
+        a: "Describe your business and pick a style. The AI generates logo concepts instantly — download your favorite and use it anywhere.",
+      },
+      {
+        q: "Can I create a logo without design skills?",
+        a: "Yes — that's the point. Your job is describing your business; the model handles composition, balance, and typography.",
+      },
+      {
+        q: "What logo styles can I generate?",
+        a: "Modern, cartoon, futuristic, monogram, vintage, and mascot styles are one click away — or describe any other style in your own words.",
+      },
+      {
+        q: "Is the logo mine to use?",
+        a: "Yes. Logos you generate are yours — download them in high definition with no watermark.",
+      },
+    ],
+  },
+
+  "/profile-picture-maker": {
+    slug: "/profile-picture-maker",
+    name: "Profile Picture Maker",
+    h1: "Make a profile picture for free",
+    description:
+      "Turn any selfie into a polished profile picture with AI. Professional studio, gradient, and outdoor styles — free online, no sign-up required.",
+    badges: ["Free to use", "No sign-up"],
+    editorTool: "profilePicture",
+    accepts: "image",
+    ctaLabel: "Upload picture",
+    samples: [img("profilepic-1"), img("profilepic-2"), img("profilepic-3")],
+    howTo: [
+      {
+        title: "Upload your picture",
+        text: "Click Upload picture and select a selfie or portrait. Good lighting in the original gives the best result, but the AI works with what it gets.",
+      },
+      {
+        title: "Choose a style",
+        text: "Pick the vibe — professional studio, vibrant gradient, warm outdoor, or classic black and white.",
+      },
+      {
+        title: "Edit your picture",
+        text: "The AI centers the shot, refines skin and lighting, and replaces the background — while keeping you looking like you.",
+      },
+      {
+        title: "Download your profile picture",
+        text: "Save it in square format, ready for LinkedIn, Instagram, X, and every other profile that needs a face.",
+      },
+      {
+        title: "Share it everywhere",
+        text: "One great profile picture works everywhere — use the same polished shot across all your accounts for a consistent presence.",
+      },
+    ],
+    features: [
+      {
+        title: "Looks like you",
+        text: "The refinement is subtle — identity, expression, and character are preserved.",
+      },
+      {
+        title: "Five polished styles",
+        text: "Studio, gradient, outdoor, black and white, or LinkedIn-ready — one click each.",
+      },
+      {
+        title: "Square and social-ready",
+        text: "The output framing works as a profile picture everywhere, from professional networks to social apps.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I make a good profile picture?",
+        a: "Start with a photo where your face is clearly visible and well-lit. Upload it, pick a style, and the AI handles centering, background, and polish.",
+      },
+      {
+        q: "Will it still look like me?",
+        a: "Yes — the enhancement is deliberately conservative. Lighting and background change; your face and expression don't.",
+      },
+      {
+        q: "Why is my profile picture blurry on some platforms?",
+        a: "Some platforms compress aggressively. Generate at high resolution, download the full-quality file, and upload the largest version the platform accepts.",
+      },
+      {
+        q: "What resolution do profile pictures need?",
+        a: "800×800 covers every major platform, including ones that display at 400×400 or smaller — sharper source, sharper display.",
+      },
+      {
+        q: "Is the profile picture maker free?",
+        a: "Yes — free, anonymous, and unlimited. No account required and no watermark on downloads.",
+      },
+    ],
+  },
+
+  "/virtual-try-on": {
+    slug: "/virtual-try-on",
+    name: "Virtual Try-On",
+    h1: "Try clothes on virtual models",
+    description:
+      "Show your clothes on AI-generated fashion models. Upload a garment photo and dress diverse virtual models — no photoshoot, no studio, no retouching.",
+    badges: ["AI models", "Diverse looks"],
+    editorTool: "virtualTryOn",
+    accepts: "image",
+    ctaLabel: "Upload photo",
+    samples: [img("tryon-1"), img("tryon-2"), img("tryon-3")],
+    howTo: [
+      {
+        title: "Upload your photo",
+        text: "Upload a photo of a person (a model, a mannequin, or yourself) that you want to dress, or start from a product shot on a plain background.",
+      },
+      {
+        title: "Describe the outfit",
+        text: "Tell the AI what they should wear — \"an elegant coral summer dress\" — and, optionally, the model's look: age range, hair, style.",
+      },
+      {
+        title: "Generate and download",
+        text: "The AI renders the garment on the person with realistic draping, lighting, and shadows. Download the images that sell.",
+      },
+    ],
+    features: [
+      {
+        title: "No photoshoot needed",
+        text: "Skip the booking, the studio, and the retouching — describe the shot instead.",
+      },
+      {
+        title: "Realistic garment rendering",
+        text: "Fabric drapes, folds, and catches light like fabric, not a sticker.",
+      },
+      {
+        title: "Diverse model looks",
+        text: "Describe the model you want — different ages, hair, and styles on demand.",
+      },
+      {
+        title: "Made for fashion e-commerce",
+        text: "Consistent on-model imagery across a whole catalog, at a fraction of photoshoot cost.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How does virtual try-on work?",
+        a: "Upload a photo of a person and describe the clothing. The AI renders the garment onto the person — matching pose, lighting, and body — while keeping their face and identity intact.",
+      },
+      {
+        q: "What clothing does it work with?",
+        a: "Tops, dresses, jackets, and full outfits all render well. The clearer the garment description, the better the result.",
+      },
+      {
+        q: "Can I use my own model photos?",
+        a: "Yes — any photo with a clearly visible person works: a model, a mannequin dressed in your garment, or yourself.",
+      },
+      {
+        q: "Does it work for men's and women's fashion?",
+        a: "Yes. Describe the garment and the model look you want, for any line.",
+      },
+      {
+        q: "How much does it cost?",
+        a: "Each try-on generation uses one credit. Free accounts include starter credits, and paid plans refresh monthly.",
       },
     ],
   },
